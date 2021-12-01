@@ -24,8 +24,8 @@ Take ALKBH5 as an example, if you want to predict the binding sites for RBP ALKB
 You first need train the model for RBP ALKBH5, then the trained model is used to predict binding probability of this RBP for your sequences. The follwoing CLI will train a  model using mutiple CNNs, which are trained using positves and negatives derived from CLIP-seq.
 
 # step 1:
-1. python mcnn.py --posi=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.train.positives.fa  --nega=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.train.negatives.fa --model_type=CNN --train=True --n_epochs=50 
-MCNN saves multiple models according length difference X of window 
+1. python mcnn.py --posi=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.train.positives.fa  --nega=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.train.negatives.fa --model_type=CNN --train=True --n_epochs=50 <br>
+MCNN saves multiple models according length difference X of window <br>
 For example, when X=200, it will save "model.pkl.101", "model.pkl.301" and "model.pkl.501". The smaller the X, the greater the number of saved models. 
 
 # step 2:
