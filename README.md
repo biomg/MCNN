@@ -1,4 +1,4 @@
-# MCNN: Inferring RNA-protein binding sites using multiple convolutional neural networks
+# MCNN: multiple convolutional neural networks for RNA–protein binding sites prediction
 Computational algorithms for identifying RNAs that bind to specific RBPs are urgently needed, and they can complement high-cost experimental  methods.  In this study, we develop a convolutional neural network (CNN) based method called MCNN  to predict RBP binding sites using mutiple RNA sequences processed by different windows size. 
 
 # Dependency:
