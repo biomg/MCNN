@@ -28,7 +28,7 @@ You first need train the model for RBP ALKBH5, then the trained model is used to
 MCNN will train a  model using mutiple CNNs, which are trained using positves and negatives derived from CLIP-seq. <br>
 
 # step 1:
-1. python mcnn.py 
+python mcnn.py 
 --posi=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.train.positives.fa  <br> 
 --nega=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.train.negatives.fa <br>
 --model_type=CNN --train=True --n_epochs=50 <br>
@@ -37,7 +37,7 @@ MCNN saves multiple models according length difference X of window <br>
 For example, when X=200, it will save "model.pkl.101", "model.pkl.301" and "model.pkl.501". The smaller the X, the greater the number of saved models.  <br>
 
 # step 2:
-2. python mcnn.py --testfile=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.ls.positives.fa  <br>
+python mcnn.py --testfile=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.ls.positives.fa  <br>
 --nega=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.ls.negatives.fa  <br>
 --model_type=CNN --predict=True <br>
 
