@@ -46,7 +46,7 @@ NOTE:if you have positive and negative sequecnes, please put them in the same se
 DO NOT predict probability for positive and negative sequence seperately in two fasta files, then combine the prediction. <br>
 
 # NOTE
-When you train iDeepE on your own constructed benchmark dataset, if the training loss cannot converge, may other optimization methods, like SGD or RMSprop can be used to replace Adam in the code.  <br>
+When you train MCNN on your own constructed benchmark dataset, if the training loss cannot converge, may other optimization methods, like SGD or RMSprop can be used to replace Adam in the code.  <br>
 
 # Contact
 Zhengsen Pan: zhengsenpan@foxmail.com <br>
