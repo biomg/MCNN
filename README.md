@@ -38,7 +38,7 @@ For example, when X=200, it will save "model.pkl.101", "model.pkl.301" and "mode
 
 # step 2:
 2. python mcnn.py --testfile=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.ls.positives.fa  <br>
-3. --nega=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.ls.negatives.fa  <br>
+--nega=../GraphProt_CLIP_sequences/ALKBH5_Baltz2012.ls.negatives.fa  <br>
 --model_type=CNN --predict=True <br>
 
 testfile is your input fasta sequences file, and the predicted outputs for all sequences will be defaulted saved in "prediction.txt". The AUC outputs for all sequences will be saved in "pre_auc.txt". The training time and testing time for all sequences will be saved in "time_train.txt" and "time_test".  The value in each line corresponds to the probability of being RBP binding site for the sequence in fasta file.  <br>
