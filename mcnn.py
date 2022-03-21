@@ -22,14 +22,16 @@ import pickle
 import timeit
 import argparse
 
+# Is it possible to use the GPU ?
 if torch.cuda.is_available():
         cuda = True
-        #torch.cuda.set_device(1)
         print('===> Using GPU')
 else:
         cuda = False
         print('===> Using CPU')
-#cuda = False        
+
+
+# Pad the RNA sequence to window_size with 'N'
 def padding_sequence_new(seq, window_size = 101, repkey = 'N'):
     seq_len = len(seq)
     new_seq = seq
@@ -38,17 +40,11 @@ def padding_sequence_new(seq, window_size = 101, repkey = 'N'):
         new_seq = seq + repkey * gap_len
     return new_seq
 
-def read_rna_dict(rna_dict = 'rna_dict'):
-    odr_dict = {}
-    with open(rna_dict, 'r') as fp:
-        for line in fp:
-            values = line.rstrip().split(',')
-            for ind, val in enumerate(values):
-                val = val.strip()
-                odr_dict[val] = ind
-    
-    return odr_dict
 
+# If the length of the RNA sequence is less than max_len, 
+# use 'N' to pad to the length of max_len. 
+# If the length of the RNA sequence is greater than max_len, 
+# only the RNA sequence with the length of max_len is retained from front to back.
 def padding_sequence(seq, max_len = 501, repkey = 'N'):
     seq_len = len(seq)
     if seq_len < max_len:
@@ -58,10 +54,12 @@ def padding_sequence(seq, max_len = 501, repkey = 'N'):
         new_seq = seq[:max_len]
     return new_seq
 
+
+# The length of the RNA sequence is L, 
+# and the RNA sequence is turned into a one-hot encoding matrix with (L+6) rows and 4 columns. 
+# The first 3 rows and the last 3 rows are filled with [0.25, 0.25, 0.25, 0.25] represented by N
 def get_RNA_seq_concolutional_array(seq, motif_len = 4):
     alpha = 'ACGT'
-    #for seq in seqs:
-    #for key, seq in seqs.iteritems():
     row = (len(seq) + 2*motif_len - 2)
     new_array = np.zeros((row, 4))
     for i in range(motif_len-1):
@@ -70,7 +68,6 @@ def get_RNA_seq_concolutional_array(seq, motif_len = 4):
     for i in range(row-3, row):
         new_array[i] = np.array([0.25]*4)
         
-    #pdb.set_trace()
     for i, val in enumerate(seq):
         i = i + motif_len-1
         if val not in 'ACGT':
@@ -81,12 +78,12 @@ def get_RNA_seq_concolutional_array(seq, motif_len = 4):
             new_array[i][index] = 1
         except:
             pdb.set_trace()
-        #data[key] = new_array
     return new_array
 
+
+# Process RNA sequences into partially overlapping subsequences
 def split_overlap_seq(seq, window_size):
     overlap_size = 50
-    #pdb.set_trace()
     bag_seqs = []
     seq_len = len(seq)
     if seq_len >= window_size:
@@ -114,6 +111,8 @@ def split_overlap_seq(seq, window_size):
             bag_seqs.append(pad_seq)
     return bag_seqs
 
+
+# Read fa file line by line, and generate labels
 def read_seq_graphprot(seq_file, label = 1):
     seq_list = []
     labels = []
@@ -130,31 +129,9 @@ def read_seq_graphprot(seq_file, label = 1):
     
     return seq_list, labels
 
-def get_RNA_concolutional_array(seq, motif_len = 4):
-    seq = seq.replace('U', 'T')
-    alpha = 'ACGT'
-    row = (len(seq) + 2*motif_len - 2)
-    new_array = np.zeros((row, 4))
-    for i in range(motif_len-1):
-        new_array[i] = np.array([0.25]*4)
-    
-    for i in range(row-3, row):
-        new_array[i] = np.array([0.25]*4)
-        
-    #pdb.set_trace()
-    for i, val in enumerate(seq):
-        i = i + motif_len-1
-        if val not in 'ACGT':
-            new_array[i] = np.array([0.25]*4)
-            continue
-        try:
-            index = alpha.index(val)
-            new_array[i][index] = 1
-        except:
-            pdb.set_trace()
-        #data[key] = new_array
-    return new_array
 
+# When processing RNA sequences into multiple partially overlapping subsequences, 
+# generate a one-hot encoding matrix with multiple channels and corresponding labels
 def get_bag_data(data, channel = 7, window_size = 101):
     bags = []
     seqs = data["seq"]
@@ -182,6 +159,9 @@ def get_bag_data(data, channel = 7, window_size = 101):
     return bags, labels
 
 
+
+# When using 'N' to pad the RNA sequence to a certain length, 
+# generate a one-hot encoding matrix with one channel and corresponding labels
 def get_bag_data_1_channel(data, max_len = 501):
     bags = []
     seqs = data["seq"]
@@ -203,17 +183,8 @@ def get_bag_data_1_channel(data, max_len = 501):
         
     return bags, labels
 
-def batch(tensor, batch_size = 1000):
-    tensor_list = []
-    length = tensor.shape[0]
-    i = 0
-    while True:
-        if (i+1) * batch_size >= length:
-            tensor_list.append(tensor[i * batch_size: length])
-            return tensor_list
-        tensor_list.append(tensor[i * batch_size: (i+1) * batch_size])
-        i += 1
 
+# base deep learning model frame
 class Estimator(object):
 
     def __init__(self, model):
@@ -291,7 +262,8 @@ class Estimator(object):
     def predict_proba(self, X):
         self.model.eval()
         return self.model.predict_proba(X)
-        
+
+# convolutional neural network framework   
 class CNN(nn.Module):
     def __init__(self, nb_filter, channel = 7, num_classes = 2, kernel_size = (4, 10), pool_size = (1, 3), labcounts = 32, window_size = 12, hidden_size = 200, stride = (1, 1), padding = 0):
         super(CNN, self).__init__()
@@ -354,6 +326,7 @@ class CNN(nn.Module):
         return temp[:, 1]
 
 
+# Integrate positive and negative sample files
 def read_data_file(posifile, negafile = None, train = True):
     data = dict()
     seqs, labels = read_seq_graphprot(posifile, label = 1)
@@ -368,6 +341,7 @@ def read_data_file(posifile, negafile = None, train = True):
     
     return data
 
+# returns the one-hot encoded matrix and labels of RNA sequences
 def get_data(posi, nega = None, channel = 7,  window_size = 101, train = True):
     data = read_data_file(posi, nega, train = train)
     if channel == 1:
@@ -379,6 +353,8 @@ def get_data(posi, nega = None, channel = 7,  window_size = 101, train = True):
     return train_bags, label
 
 
+
+# train and save a deep learning model
 def train_network(model_type, X_train, y_train, channel = 7, window_size = 107, model_file = 'model.pkl', batch_size = 100, n_epochs = 50, num_filters = 16):
     print ('model training for ', model_type)
     #nb_epos= 5
@@ -398,6 +374,8 @@ def train_network(model_type, X_train, y_train, channel = 7, window_size = 107, 
     #pred = model.predict_proba(test_bags)
     #return model
 
+
+#test the trained deep learning mode
 def predict_network(model_type, X_test, channel = 7, window_size = 107, model_file = 'model.pkl', batch_size = 100, n_epochs = 50, num_filters = 16):
     print ('model training for ', model_type)
     #nb_epos= 5
@@ -419,8 +397,10 @@ def predict_network(model_type, X_test, channel = 7, window_size = 107, model_fi
             pred_test1 = model.predict_proba(test)[:, 1]
             pred = np.concatenate((pred, pred_test1), axis = 0)
     return pred
-        
-def run_ideepe(parser):
+
+
+# MCNN main function
+def run_mcnn(parser):
     #data_dir = './GraphProt_CLIP_sequences/'
     posi = parser.posi
     nega = parser.nega
@@ -546,6 +526,7 @@ def run_ideepe(parser):
         print ('please specify that you want to train the mdoel or predict for your own sequences')
 
 
+# MCNN framework optional parameters
 def parse_arguments(parser):
     parser.add_argument('--posi', type=str, metavar='<postive_sequecne_file>', help='The fasta file of positive training samples')
     parser.add_argument('--nega', type=str, metavar='<negative_sequecne_file>', help='The fasta file of negative training samples')
@@ -565,8 +546,7 @@ def parse_arguments(parser):
 parser = argparse.ArgumentParser()
 args = parse_arguments(parser)
 print (args)
-#model_type = sys.argv[1]
-run_ideepe(args)
-# run_ideepe_on_graphprot()
+run_mcnn(args)
+
 
 
