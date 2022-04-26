@@ -14,7 +14,7 @@ It has 24 experiments of 21 RBPs, and we need train one model per experiment. <b
 Now it supports GPUs. The code support GPUs and CPUs, it automatically check whether you server install GPU or not, it will proritize using the GPUs if there exist GPUs. <br> In addition, MCNN can also be adapted to protein binding sites on DNAs and identify DNA binding speciticity of proteins.  <br>
 
 # Usage:
-python ideepe.py [-h] [--posi <postive_sequecne_file>] <br>
+python mcnn.py [-h] [--posi <postive_sequecne_file>] <br>
                  [--nega <negative_sequecne_file>] [--model_type MODEL_TYPE] <br>
                  [--out_file OUT_FILE] [--train TRAIN] [--model_file MODEL_FILE] <br>
                  [--predict PREDICT] [--testfile TESTFILE] [--batch_size BATCH_SIZE] <br>
